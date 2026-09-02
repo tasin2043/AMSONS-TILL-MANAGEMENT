@@ -1,0 +1,3247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amsons Alumrock - POS System</title>
+<style>
+    :root {
+        --navy-dark:#061527;
+        --navy:#082245;
+        --navy-mid:#0f3364;
+        --navy-light:#0f3f78;
+        --gold:#e6b93c;
+        --gold-dark:#c99a2e;
+        --gold-light:#f2cd6c;
+        --red:#e0483a;
+        --red-dark:#a52a1f;
+        --bg:#e9ecf1;
+        --white:#fff;
+        --text-dark:#12233f;
+        --green:#2f9e4f;
+        --green-light:#45c169;
+        --green-dark:#1c6b34;
+        --blue:#2f6fce;
+        --blue-light:#6fa3e8;
+        --blue-dark:#1f4f9e;
+        --orange:#e8823a;
+        --orange-dark:#a34b0f;
+
+        /* Extra variables used only by the Till Login screen styles below */
+        --bg-black:#0b0b0d;
+        --panel:#141416;
+        --panel-light:#101113;
+        --border-gold: rgba(230,185,60,0.45);
+        --text-muted:#9a9a9e;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        user-select: none;
+    }
+
+    html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    body {
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    svg { display: block; }
+
+    .pos-container {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg);
+    }
+
+    /* ===== Top Bar ===== */
+    .topbar {
+        flex: 0 0 auto;
+        position: relative;
+        background-color: #000;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0.8vh 1vw;
+        gap: 1vw;
+    }
+
+    /* Till-open border light: a one-shot gold "current" that runs
+       around the full dashboard page's border, from the top-right
+       corner, down the right edge, across the bottom, up the left
+       edge, ending at the top-left corner. Built as an SVG overlay
+       sized to the dashboard's exact pixel box (see playTillOpenLight
+       in the script below), so the stroke stays crisp at any screen
+       size. */
+    .till-open-light-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 500;
+        opacity: 1;
+        transition: opacity 0.4s ease-out;
+    }
+
+    .till-open-light-svg.fade-out {
+        opacity: 0;
+    }
+
+    .till-open-light-path {
+        fill: none;
+        stroke: #c98f00;
+        stroke-linecap: round;
+        filter:
+            drop-shadow(0 0 2px rgba(0,0,0,0.55))
+            drop-shadow(0 0 8px var(--gold))
+            drop-shadow(0 0 18px var(--gold-light))
+            drop-shadow(0 0 28px var(--gold-light));
+    }
+
+    .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 0.9vw;
+        flex: 0 0 auto;
+    }
+
+    .till-block, .admin-block {
+        display: flex;
+        align-items: center;
+        gap: 0.5vw;
+    }
+
+    .topbar .icon-gold {
+        color: var(--gold);
+        width: clamp(22px, 2vw, 30px);
+        height: clamp(22px, 2vw, 30px);
+        flex: 0 0 auto;
+    }
+
+    .till-num {
+        font-size: clamp(15px, 1.35vw, 20px);
+        font-weight: bold;
+        color: #fff;
+        letter-spacing: 0.5px;
+    }
+
+    .till-underline {
+        height: 2px;
+        background: var(--gold);
+        margin-top: 3px;
+        width: 70%;
+    }
+
+    .admin-label {
+        font-size: clamp(12px, 1vw, 15px);
+        color: var(--gold);
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+
+    .admin-name {
+        font-size: clamp(15px, 1.4vw, 21px);
+        color: #fff;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .divider {
+        width: 1px;
+        align-self: stretch;
+        background: rgba(255,255,255,0.25);
+    }
+
+    .topbar-center {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6vw;
+    }
+
+    .mosque-icon {
+        width: clamp(32px, 3.2vw, 48px);
+        height: clamp(32px, 3.2vw, 48px);
+        color: var(--gold);
+        flex: 0 0 auto;
+    }
+
+    .logo-crop {
+        --logo-h: clamp(40px, 4.4vw, 64px);
+        height: var(--logo-h);
+        overflow: hidden;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .amsons-logo {
+        height: calc(var(--logo-h) * 2.276);
+        width: auto;
+        display: block;
+        margin-top: calc(var(--logo-h) * -0.289);
+    }
+
+    .alumrock-box {
+        border: 1.5px solid var(--gold);
+        border-radius: 4px;
+        color: #fff;
+        font-weight: bold;
+        font-size: clamp(14px, 1.5vw, 22px);
+        letter-spacing: 1px;
+        padding: 0.3vh 0.7vw;
+        background: rgba(255,255,255,0.06);
+        white-space: nowrap;
+    }
+
+    .topbar-right {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 0.9vw;
+    }
+
+    .mode-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3vh;
+    }
+
+    .mode-badge {
+        background: linear-gradient(to bottom, var(--gold-light), var(--gold-dark));
+        color: var(--text-dark);
+        font-weight: bold;
+        font-size: clamp(9px, 0.75vw, 11px);
+        padding: 0.2vh 0.6vw;
+        border: 1.5px solid #8a6a1c;
+        border-radius: 3px;
+        letter-spacing: 0.5px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 3px 0 rgba(0,0,0,0.2), 0 5px 6px rgba(0,0,0,0.3);
+    }
+
+    .mode-label {
+        font-size: clamp(8px, 0.65vw, 10px);
+        color: #ccc;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+
+    /* ===== Main Body ===== */
+    .main-body {
+        flex: 1 1 auto;
+        display: flex;
+        min-height: 0;
+        padding: 1.1vw;
+        gap: 0.8vw;
+    }
+
+    .left-area {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8vh;
+    }
+
+    .invoice-search {
+        flex: 0 0 auto;
+        border: 1px solid #b8bec8;
+        background: #fff;
+        padding: 0.5vh 1vw;
+        font-size: clamp(14px, 1.2vw, 18px);
+        color: #333;
+        border-radius: 10px;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 0 1px rgba(20,30,50,0.3), 0 6px 14px rgba(20,30,50,0.22);
+    }
+
+    .invoice-search::placeholder {
+        color: #333;
+    }
+
+    /* Data Input / Price / Total Qty / Total Items - a compact, full-width
+       bar on its own row (not sharing the row with totals-panel anymore). */
+    .cards-grid {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: 1.7fr 1.3fr 1fr 1fr;
+        gap: 0.6vw;
+    }
+
+    .info-card {
+        border: 1px solid #b8bec8;
+        background: #fff;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 0 1px rgba(20,30,50,0.3), 0 6px 14px rgba(20,30,50,0.22);
+    }
+
+    .card-label {
+        background: linear-gradient(to bottom, var(--navy-light), var(--navy));
+        color: #fff;
+        font-size: clamp(12px, 1vw, 15px);
+        font-weight: bold;
+        padding: 0.35vh 0;
+        letter-spacing: 0.5px;
+    }
+
+    .card-value {
+        font-size: clamp(18px, 1.8vw, 26px);
+        font-weight: bold;
+        color: var(--text-dark);
+        padding: 1vh 0;
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .info-card.err-flash {
+        animation: shake 0.35s;
+    }
+
+    .info-card.err-flash .card-value {
+        color: var(--red);
+    }
+
+    /* Physically hidden but focusable input that soaks up every keystroke
+       on the dashboard - both the on-screen keypad and a USB barcode
+       scanner (which just types digits + Enter like a keyboard) write
+       into the same DATA INPUT buffer through this element. */
+    .scan-capture {
+        position: fixed;
+        top: -100px;
+        left: -100px;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        border: none;
+        outline: none;
+        padding: 0;
+    }
+
+    /* Top-of-screen banner for checkout/scan feedback (product not found,
+       payment approved, backend unreachable, ...). */
+    .till-toast {
+        position: absolute;
+        top: 1.2vh;
+        left: 50%;
+        transform: translateX(-50%) translateY(-140%);
+        z-index: 600;
+        padding: 1.1vh 1.6vw;
+        border-radius: 10px;
+        font-size: clamp(14px, 1.15vw, 18px);
+        font-weight: bold;
+        color: #fff;
+        background: var(--navy);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+        transition: transform 0.25s ease-out;
+        pointer-events: none;
+        white-space: nowrap;
+    }
+
+    .till-toast.show {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .till-toast.ok {
+        background: linear-gradient(to bottom, var(--green-light), var(--green));
+    }
+
+    .till-toast.error {
+        background: linear-gradient(to bottom, #e0483a, var(--red-dark));
+    }
+
+    /* Full-screen red alarm - card payment declined/voided (js/dashboard.js
+       triggers the "blink" class alongside the "Transaction avoided"
+       announcement). Sits above every other overlay so it's unmissable. */
+    .alarm-flash {
+        position: fixed;
+        inset: 0;
+        background: #ff1414;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 900;
+        display: none;
+    }
+
+    .alarm-flash.blink {
+        display: block;
+        animation: alarmBlink 0.5s steps(1, end) 4;
+    }
+
+    @keyframes alarmBlink {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 0.55; }
+    }
+
+    /* Item table + totals panel row - totals-panel now runs alongside the
+       full height of the item table instead of sitting up top next to
+       the cards-grid. */
+    .table-row {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        gap: 0.7vw;
+    }
+
+    .totals-panel {
+        flex: 0 0 19vw;
+        min-width: 195px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #b8bec8;
+        background: #fff;
+        padding: 0.8vh 0.7vw;
+        gap: 1.1vh;
+        border-radius: 10px;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 0 1px rgba(20,30,50,0.3), 0 6px 14px rgba(20,30,50,0.22);
+    }
+
+    /* Each total is its own bordered, color-coded, embossed "chip" inside
+       the shared totals-panel box. flex:1 lets the three chips grow to
+       fill the panel's full height (instead of leaving dead space
+       between them) - the panel's own `gap` above keeps a slim, even
+       reveal of the background between chips. The taller inset/ledge
+       shadow gives each chip a deeper, more raised 3D feel to match. */
+    .totals-row {
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        border-radius: 10px;
+        border: 1.5px solid var(--row-border);
+        background: linear-gradient(to bottom, var(--row-tint-light), var(--row-tint));
+        padding: 0.8vh 1vw;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), inset 0 -3px 6px rgba(0,0,0,0.05), 0 4px 0 var(--row-shadow), 0 9px 14px rgba(20,30,50,0.28);
+    }
+
+    .totals-row.amount {
+        --row-border: var(--navy-mid);
+        --row-tint-light: #eef4fc;
+        --row-tint: #d3e2f5;
+        --row-shadow: #0a2c57;
+    }
+
+    .totals-row.payable {
+        --row-border: var(--gold-dark);
+        --row-tint-light: #fdf6e5;
+        --row-tint: #f7e3ae;
+        --row-shadow: #8a6a1c;
+    }
+
+    .totals-row.change {
+        --row-border: var(--green);
+        --row-tint-light: #eafaef;
+        --row-tint: #cdf0d8;
+        --row-shadow: #1c6b34;
+    }
+
+    .t-label {
+        flex: 0 0 22%;
+        border-right: 1.5px solid var(--row-border);
+        padding-right: 0.6vw;
+        margin-right: 0.6vw;
+        font-size: clamp(13px, 1.15vw, 17px);
+        font-weight: bold;
+        color: var(--row-shadow);
+        letter-spacing: 0.3px;
+    }
+
+    .t-value {
+        flex: 1 1 auto;
+        text-align: right;
+        font-size: clamp(26px, 2.9vw, 40px);
+        font-weight: bold;
+        color: var(--row-shadow);
+    }
+
+    /* Item Table */
+    .item-table-wrap {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 0;
+        border: 1px solid #b8bec8;
+        background: #fff;
+        overflow-y: auto;
+        border-radius: 10px;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 0 1px rgba(20,30,50,0.3), 0 6px 14px rgba(20,30,50,0.22);
+    }
+
+    /* Shared scrollbar look for any scrollable panel on the till (cart
+       list, category product picker) - wide enough to grab on a
+       touchscreen, gold to match the theme, not the near-invisible
+       default. */
+    .gold-scroll {
+        scrollbar-width: auto;
+        scrollbar-color: var(--gold) #e9ecf1;
+    }
+
+    .gold-scroll::-webkit-scrollbar {
+        width: 14px;
+    }
+
+    .gold-scroll::-webkit-scrollbar-track {
+        background: #e9ecf1;
+        border-radius: 10px;
+    }
+
+    .gold-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(to bottom, var(--gold-light), var(--gold-dark));
+        border-radius: 10px;
+        border: 2px solid #e9ecf1;
+    }
+
+    /* ---- Category product-picker overlay (opened by tapping a
+       CATEGORIES button) ---- */
+    .cat-picker-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 550;
+    }
+
+    .cat-picker-overlay.open { display: flex; }
+
+    .cat-picker-panel {
+        width: min(92vw, 900px);
+        max-height: 80vh;
+        background: var(--bg);
+        border-radius: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .cat-picker-header {
+        background: linear-gradient(to bottom, var(--navy-light), var(--navy));
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.4vh 1.4vw;
+        font-weight: bold;
+        font-size: clamp(16px, 1.4vw, 22px);
+        flex: 0 0 auto;
+    }
+
+    .cat-picker-close {
+        background: var(--red);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .cat-picker-grid {
+        padding: 1.2vh 1.2vw;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.8vw;
+        overflow-y: auto;
+    }
+
+    .cat-picker-empty {
+        padding: 3vh 1vw;
+        text-align: center;
+        color: var(--text-dark);
+        opacity: 0.6;
+        grid-column: 1 / -1;
+    }
+
+    .cat-pick-item {
+        border: 1px solid #b8bec8;
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.2vh 0.6vw;
+        text-align: center;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-weight: bold;
+        color: var(--text-dark);
+        font-size: clamp(12px, 1vw, 15px);
+    }
+
+    .cat-pick-item:active {
+        transform: translateY(2px);
+    }
+
+    .cat-pick-item .cat-pick-price {
+        color: var(--green);
+    }
+
+    /* ---- Generic sidebar-action modal: reuses the cat-picker overlay/panel/
+       header/close chrome above (same classes, different id) so every
+       sidebar feature (DISCOUNT, ON HOLD/OPEN SALE, GOODS RETURN, INQUIRY,
+       VOUCHER, SETTINGS) shares one shell; js/dashboard.js swaps out just
+       the body's inner HTML per feature using the small building blocks
+       below. ---- */
+    .am-list {
+        padding: 1.2vh 1.2vw;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6vh;
+        overflow-y: auto;
+    }
+
+    .am-row {
+        border: 1px solid #b8bec8;
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.2vh 1vw;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8vw;
+        cursor: pointer;
+        font-weight: bold;
+        color: var(--text-dark);
+        font-size: clamp(13px, 1vw, 16px);
+        text-align: left;
+    }
+
+    .am-row:active {
+        transform: translateY(2px);
+    }
+
+    .am-row .am-row-sub {
+        font-weight: normal;
+        opacity: 0.65;
+        font-size: 0.85em;
+    }
+
+    .am-row .am-row-value {
+        color: var(--green);
+    }
+
+    .am-empty {
+        padding: 3vh 1vw;
+        text-align: center;
+        color: var(--text-dark);
+        opacity: 0.6;
+    }
+
+    .am-section {
+        padding: 1.2vh 1.2vw;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2vh;
+    }
+
+    .am-target {
+        font-weight: bold;
+        color: var(--navy);
+        text-align: center;
+        font-size: clamp(14px, 1.2vw, 18px);
+    }
+
+    .am-field {
+        border: 1.5px solid #b8bec8;
+        border-radius: 8px;
+        padding: 1.2vh 1vw;
+        font-size: clamp(14px, 1.1vw, 18px);
+        font-weight: bold;
+        color: var(--text-dark);
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .am-btn-row {
+        display: flex;
+        gap: 0.8vw;
+    }
+
+    .am-btn {
+        flex: 1;
+        border: none;
+        border-radius: 8px;
+        padding: 1.4vh 1vw;
+        font-weight: bold;
+        font-size: clamp(13px, 1.05vw, 17px);
+        cursor: pointer;
+        background: #e3e7ee;
+        color: var(--text-dark);
+    }
+
+    .am-btn:active {
+        transform: translateY(2px);
+    }
+
+    .am-btn.primary {
+        background: linear-gradient(to bottom, var(--gold-light), var(--gold-dark));
+    }
+
+    .am-btn.danger {
+        background: var(--red);
+        color: #fff;
+    }
+
+    .am-btn.ghost {
+        background: transparent;
+        border: 1.5px solid #b8bec8;
+    }
+
+    .am-keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6vw;
+    }
+
+    .am-keypad button {
+        border: none;
+        border-radius: 8px;
+        background: #f2f4f8;
+        color: var(--text-dark);
+        font-weight: bold;
+        font-size: clamp(16px, 1.3vw, 22px);
+        padding: 1.4vh 0;
+        cursor: pointer;
+    }
+
+    .am-keypad button:active {
+        transform: translateY(2px);
+    }
+
+    .am-scan-row {
+        display: flex;
+        gap: 0.6vw;
+    }
+
+    .am-scan-row .am-field {
+        flex: 1;
+    }
+
+    /* ---- SETTINGS modal: Profile card, Invoices card, System rows -
+       all sit inside the same #actionModalBody shell as the .am-*
+       blocks above. ---- */
+    .stg-section-title {
+        font-weight: bold;
+        color: var(--navy);
+        font-size: clamp(11px, 0.85vw, 13px);
+        letter-spacing: 0.06em;
+        opacity: 0.7;
+        margin: 0.4vh 0.1vw 0;
+    }
+
+    .stg-profile-card {
+        border: 1px solid #b8bec8;
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.2vh 1vw;
+        display: flex;
+        align-items: center;
+        gap: 0.9vw;
+    }
+
+    .stg-avatar {
+        flex: none;
+        overflow: hidden;
+        background: #f2f4f8;
+        position: relative;
+    }
+
+    .stg-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .stg-avatar.editable {
+        cursor: pointer;
+    }
+
+    .stg-avatar.editable::after {
+        content: '✎';
+        position: absolute;
+        right: -2px;
+        bottom: -2px;
+        width: 1.6em;
+        height: 1.6em;
+        border-radius: 50%;
+        background: var(--gold);
+        color: #fff;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+    }
+
+    .stg-profile-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stg-profile-name {
+        font-weight: bold;
+        color: var(--text-dark);
+        font-size: clamp(14px, 1.15vw, 18px);
+    }
+
+    .stg-profile-sub {
+        color: var(--text-dark);
+        opacity: 0.65;
+        font-size: 0.85em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .stg-field-label {
+        font-weight: bold;
+        color: var(--navy);
+        font-size: clamp(11px, 0.85vw, 13px);
+        margin-bottom: -0.6vh;
+    }
+
+    .stg-invoice-row {
+        border: 1px solid #b8bec8;
+        background: #fff;
+        border-radius: 10px;
+        padding: 1vh 1vw;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8vw;
+        font-weight: bold;
+        color: var(--text-dark);
+        font-size: clamp(13px, 1vw, 16px);
+    }
+
+    .stg-invoice-row .am-row-sub {
+        font-weight: normal;
+        opacity: 0.65;
+        font-size: 0.85em;
+        display: block;
+    }
+
+    .item-table tbody tr.selected-line {
+        outline: 2px solid var(--gold-dark);
+        outline-offset: -2px;
+        background: #fdf3d8;
+    }
+
+    .item-table tbody tr {
+        cursor: pointer;
+    }
+
+    .line-discount-tag {
+        color: var(--red);
+        font-weight: bold;
+        font-size: 0.82em;
+        display: block;
+    }
+
+    .item-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: clamp(14px, 1.15vw, 18px);
+    }
+
+    .item-table th {
+        background: linear-gradient(to bottom, var(--gold-light), var(--gold));
+        color: var(--text-dark);
+        text-align: left;
+        padding: 0.7vh 0.6vw;
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        letter-spacing: 0.3px;
+    }
+
+    .item-table td {
+        border-bottom: 1px solid #eee;
+        padding: 0.5vh 0.6vw;
+    }
+
+    /* Bottom section: categories + keypad. Capped so it stops growing
+       taller on a big/full screen - the item table above (flex: 1 1
+       auto, no cap) absorbs any extra vertical space instead, so the
+       keypad buttons stay a fixed, comfortable size at any screen size. */
+    .bottom-section {
+        flex: 1.15 1 40%;
+        min-height: 0;
+        max-height: 480px;
+        display: flex;
+        gap: clamp(16px, 1.8vw, 30px);
+    }
+
+    /* Grows to absorb whatever width the keypad (fixed to its own
+       content size below) doesn't need, instead of leaving it as dead
+       space next to the keypad. Now holds two stacked sub-sections -
+       AI-picked popular PRODUCTS on top, fixed CATEGORIES below -
+       each its own small-card grid instead of one grid stretched to
+       fill the block's full height. */
+    .categories-block {
+        flex: 4 1 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5vh;
+    }
+
+    .section-title {
+        color: var(--navy);
+        font-weight: bold;
+        font-size: clamp(16px, 1.4vw, 20px);
+        letter-spacing: 0.3px;
+        flex: 0 0 auto;
+    }
+
+    .section-subtitle {
+        color: var(--navy);
+        font-weight: bold;
+        font-size: clamp(11px, 0.95vw, 14px);
+        letter-spacing: 0.6px;
+        opacity: 0.65;
+        flex: 0 0 auto;
+        margin-top: 0.2vh;
+    }
+
+    /* Small square cards, 5 per row - shared by the PRODUCTS grid
+       (AI-picked popular items, filled in later) and the CATEGORIES
+       grid. Barely any gap between them so the cards themselves - not
+       the spacing - fill the row. */
+    .products-grid,
+    .categories-grid {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 124px));
+        justify-content: start;
+        gap: 0.6vh 0.6vw;
+    }
+
+    /* However many products get tagged "Quick Pick" in Lightspeed, all of
+       them render here (js/dashboard.js). Grows to claim every bit of
+       vertical space CATEGORIES below doesn't need, so PRODUCTS is
+       always the block filling the space and CATEGORIES stays pinned
+       to the bottom, flush with the keypad; overflow-y is just a
+       safety net if an admin tags far more products than fit. */
+    .products-grid {
+        flex: 1 1 0;
+        min-height: 0;
+        align-content: start;
+        overflow-y: auto;
+        padding-right: 2px;
+    }
+
+    .prod-btn,
+    .cat-btn {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border: 1.5px solid #cbb877;
+        background: linear-gradient(to bottom, #fffdf7, #f2ead2);
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25vh;
+        font-size: clamp(11px, 1vw, 15px);
+        font-weight: bold;
+        color: var(--navy);
+        cursor: pointer;
+        text-align: center;
+        line-height: 1.15;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 4px 0 #b9a769, 0 7px 10px rgba(0,0,0,0.22);
+        transform: translateY(0);
+        transition: box-shadow 0.08s, transform 0.08s;
+    }
+
+    .prod-btn:active,
+    .cat-btn:active {
+        background: linear-gradient(to bottom, #f2ead2, #e0d09c);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+        transform: translateY(4px);
+    }
+
+    .cat-icon {
+        width: clamp(22px, 2.3vw, 34px);
+        height: clamp(22px, 2.3vw, 34px);
+    }
+
+    /* Fixed to its own content width (grow:0) instead of claiming a
+       46% share of the row, so it never leaves unused space next to
+       it - .categories-block above grows to take whatever this block
+       doesn't need. Still allowed to shrink on a narrow screen. */
+    .keypad-block {
+        flex: 1 1 545px;
+        min-width: 0;
+    }
+
+    .keypad-grid {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 0.7vh 0.6vw;
+    }
+
+    /* Puffy glossy "clay" 3D style - big rounded squares with a glass
+       highlight up top and a deep solid ledge underneath, colors kept
+       the same as before. The digit itself breathes with a faint glow;
+       pressing it pauses that pulse and blends into a soft, diffused
+       light instead of a hard flash. */
+    @keyframes numGlowWhite {
+        0%, 100% { text-shadow: 0 0 1px rgba(40,100,180,0.15); }
+        50%      { text-shadow: 0 0 4px rgba(40,100,180,0.4); }
+    }
+
+    @keyframes numGlowOrange {
+        0%, 100% { text-shadow: 0 0 1px rgba(255,160,60,0.2); }
+        50%      { text-shadow: 0 0 5px rgba(255,160,60,0.55); }
+    }
+
+    .key-btn {
+        border: none;
+        border-radius: 10%;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.3vw;
+        font-size: clamp(36px, 4.2vw, 58px);
+        font-weight: bold;
+        color: #fff;
+        cursor: pointer;
+        background: radial-gradient(circle at 32% 26%, #2d6099 0%, var(--navy) 45%, var(--navy-dark) 100%);
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.35), inset 0 -7px 11px rgba(0,0,0,0.35), 0 0 5px rgba(6,21,39,0.4), 0 7px 0 #04101f, 0 12px 15px rgba(0,0,0,0.5);
+        transform: translateY(0);
+        transition: box-shadow 0.15s, transform 0.08s;
+    }
+
+    /* Every key — plain digits, backspace, and the labelled action keys
+       (BACK, ENTER, KEYBOARD, CLEAR SALE) — fills its grid cell fully,
+       so the whole calculator reads as one uniform, evenly-spaced set
+       of buttons; the visible gap between keys comes from the grid's
+       own `gap`, not from shrinking individual buttons. */
+    .key-btn:not(.action) {
+        animation: numGlowWhite 2.6s ease-in-out infinite;
+    }
+
+    .key-btn.orange-btn:not(.action) {
+        animation: numGlowOrange 2.6s ease-in-out infinite;
+    }
+
+    .key-btn:active {
+        animation-play-state: paused;
+        transform: translateY(7px);
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.35), 0 0 12px rgba(120,170,230,0.6), 0 0 24px rgba(120,170,230,0.3), 0 1px 0 #04101f, 0 2px 4px rgba(0,0,0,0.3);
+        text-shadow: 0 0 5px rgba(50,115,195,0.7);
+    }
+
+    .key-btn.action {
+        flex-direction: column;
+        font-size: clamp(13px, 1.15vw, 18px);
+        gap: 4px;
+        line-height: 1.2;
+    }
+
+    .key-btn .k-icon {
+        width: clamp(22px, 2vw, 30px);
+        height: clamp(22px, 2vw, 30px);
+    }
+
+    /* Flash: an explicit bright "blink" fired by JS on every tap, on
+       top of the existing :active glow, so the press is unmistakable
+       even for a very quick tap. */
+    @keyframes keyFlash {
+        0%   { filter: brightness(1); }
+        25%  { filter: brightness(2.1); }
+        100% { filter: brightness(1); }
+    }
+
+    .key-btn.flash {
+        animation: keyFlash 0.28s ease-out;
+    }
+
+    .key-btn.tan {
+        background: radial-gradient(circle at 32% 26%, var(--gold) 0%, var(--gold-dark) 45%, #a67f22 100%);
+        color: var(--text-dark);
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.55), inset 0 -7px 11px rgba(0,0,0,0.18), 0 0 5px rgba(180,140,30,0.35), 0 7px 0 #6b5015, 0 12px 15px rgba(0,0,0,0.4);
+    }
+
+    .key-btn.tan:active {
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.2), 0 0 11px rgba(255,210,90,0.6), 0 0 22px rgba(255,210,90,0.3), 0 1px 0 #6b5015, 0 2px 4px rgba(0,0,0,0.25);
+    }
+
+    .key-btn.pale {
+        background: radial-gradient(circle at 32% 26%, #ffffff 0%, #e2e8ef 45%, #b9c4d1 100%);
+        color: var(--navy);
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.9), inset 0 -7px 11px rgba(0,0,0,0.08), 0 0 5px rgba(200,210,224,0.35), 0 7px 0 #8b96a4, 0 12px 15px rgba(0,0,0,0.3);
+    }
+
+    .key-btn.pale:active {
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.1), 0 0 10px rgba(255,255,255,0.6), 0 0 20px rgba(220,230,240,0.3), 0 1px 0 #8b96a4, 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .key-btn.pale .k-icon {
+        width: clamp(26px, 2.4vw, 34px);
+        height: clamp(26px, 2.4vw, 34px);
+    }
+
+    .key-btn.green-btn {
+        background: radial-gradient(circle at 32% 26%, var(--green-light) 0%, #3aad61 45%, var(--green) 100%);
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.5), inset 0 -7px 11px rgba(0,0,0,0.2), 0 0 5px rgba(47,158,79,0.3), 0 7px 0 #1c6b34, 0 12px 15px rgba(0,0,0,0.35);
+    }
+
+    .key-btn.green-btn:active {
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.25), 0 0 11px rgba(90,220,130,0.6), 0 0 22px rgba(90,220,130,0.3), 0 1px 0 #1c6b34, 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .key-btn.orange-btn {
+        background: radial-gradient(circle at 32% 26%, #e8823a 0%, #c85f14 45%, #a34b0f 100%);
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.4), inset 0 -7px 11px rgba(0,0,0,0.25), 0 0 5px rgba(150,75,15,0.35), 0 7px 0 #5c2d0a, 0 12px 15px rgba(0,0,0,0.4);
+    }
+
+    .key-btn.orange-btn:active {
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.25), 0 0 11px rgba(255,160,80,0.6), 0 0 22px rgba(255,160,80,0.3), 0 1px 0 #5c2d0a, 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* ===== Right Sidebar ===== */
+    .right-sidebar {
+        flex: 0 0 11.75vw;
+        min-width: 170px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9vh;
+        background: var(--bg);
+    }
+
+    .sidebar-top-row {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 0.5vw;
+        margin-bottom: 0.9vh;
+    }
+
+    .sidebar-top-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        border: none;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 0.2vh 0.2vw;
+        color: #fff;
+        font-weight: bold;
+        font-size: clamp(11px, 0.95vw, 14px);
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transform: translateY(0);
+        transition: box-shadow 0.15s, transform 0.08s;
+    }
+
+    .sidebar-top-btn .top-btn-icon {
+        width: clamp(16px, 1.5vw, 22px);
+        height: clamp(16px, 1.5vw, 22px);
+    }
+
+    /* Same "puffy glossy clay" 3D treatment as the number keypad's
+       .key-btn: a glassy highlight up top, a deep solid ledge
+       underneath, and a soft outer glow. Ledge/blur kept shallow so it
+       doesn't visually crowd the menu button sitting right underneath. */
+    .back-branch-btn {
+        background: radial-gradient(circle at 32% 26%, var(--gold) 0%, var(--gold-dark) 45%, #8a6a1c 100%);
+        color: #1a1300;
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.45), inset 0 -7px 11px rgba(0,0,0,0.25), 0 0 5px rgba(0,0,0,0.3), 0 4px 0 #6b5015, 0 7px 9px rgba(0,0,0,0.4);
+    }
+
+    .back-branch-btn:active {
+        transform: translateY(4px);
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.3), 0 0 11px rgba(255,210,90,0.6), 0 0 22px rgba(255,210,90,0.3), 0 1px 0 #6b5015, 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* LOGOUT - danger red, distinct from BACK so the two read as
+       clearly different actions. */
+    .logout-dash-btn {
+        background: radial-gradient(circle at 32% 26%, var(--red) 0%, var(--red-dark) 45%, #5c1610 100%);
+        color: #fff;
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.3), inset 0 -7px 11px rgba(0,0,0,0.3), 0 0 5px rgba(0,0,0,0.35), 0 4px 0 #4a120d, 0 7px 9px rgba(0,0,0,0.4);
+    }
+
+    .logout-dash-btn:active {
+        transform: translateY(4px);
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.35), 0 0 11px rgba(255,110,90,0.6), 0 0 22px rgba(255,110,90,0.3), 0 1px 0 #4a120d, 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* One uniform color across every menu button - cream/off-white body,
+       navy icon strip (fixed 22%-wide well) and navy name filling the
+       rest - instead of a different color per button. The bottom "ledge"
+       (solid color + soft blur) plus inset highlights/shadows give it the
+       same puffy 3D press-down feel as the numeric keypad's .key-btn.
+       Tapping a button flips it to the inverted navy/cream "selected"
+       look (see .menu-btn.selected below) and it stays that way so it
+       reads as the currently active tab. */
+    .menu-btn {
+        flex: 1 1 0;
+        min-height: 0;
+        border: none;
+        border-radius: 8px;
+        display: flex;
+        align-items: stretch;
+        overflow: hidden;
+        cursor: pointer;
+        background: linear-gradient(155deg, #fffdf7, #f2ead2 55%, #e0d09c 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -3px 6px rgba(0,0,0,0.12), 0 5px 0 #b9a769, 0 9px 12px rgba(0,0,0,0.35);
+        transform: translateY(0);
+        transition: box-shadow 0.08s, transform 0.08s;
+    }
+
+    .menu-btn:active {
+        transform: translateY(5px);
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.2), 0 1px 0 #b9a769, 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .menu-btn .icon-box {
+        flex: 0 0 22%;
+        width: 22%;
+        height: 100%;
+        border: none;
+        border-radius: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: linear-gradient(155deg, var(--navy-light), var(--navy) 55%, var(--navy-dark) 100%);
+        box-shadow: inset -4px 0 8px rgba(0,0,0,0.3), inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .menu-btn .m-icon {
+        width: 55%;
+        height: 55%;
+        color: #fffdf7;
+    }
+
+    .menu-btn .label {
+        flex: 1 1 78%;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.3vw;
+        color: var(--navy-dark);
+        font-weight: bold;
+        font-size: clamp(17px, 1.65vw, 23px);
+        line-height: 1.15;
+        text-align: center;
+        text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    }
+
+    /* Selected/active state - inverted navy body with a cream icon strip,
+       fired by JS on click and left on until another button is tapped, so
+       it's obvious which tab the user is currently on. */
+    .menu-btn.selected {
+        background: linear-gradient(155deg, var(--navy-light), var(--navy) 55%, var(--navy-dark) 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -3px 6px rgba(0,0,0,0.35), 0 5px 0 #04101f, 0 9px 12px rgba(0,0,0,0.4);
+    }
+
+    .menu-btn.selected:active {
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.45), 0 1px 0 #04101f, 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .menu-btn.selected .icon-box {
+        background: linear-gradient(155deg, #fffdf7, #f2ead2 55%, #e0d09c 100%);
+        box-shadow: inset -4px 0 8px rgba(0,0,0,0.15), inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .menu-btn.selected .m-icon {
+        color: var(--navy);
+    }
+
+    .menu-btn.selected .label {
+        color: #f5f0e0;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    /* Function-coded sidebar buttons - VOID (red/danger), OPEN SALE
+       (amber/pending), CARD SALE (blue) and CASH SALE (green) get their
+       own "official" colour instead of sharing the same cream/gold body
+       as every other menu button, so the four most safety/time critical
+       actions stand out at a glance. Each sets its own tint/accent pair
+       via custom properties, then reuses the same puffy-clay gradient +
+       ledge shadow shape as the base .menu-btn/.menu-btn.selected rules
+       above so the whole sidebar still reads as one family of buttons. */
+    .menu-btn.c-void {
+        --btn-tint-light:#fdece9;
+        --btn-tint-mid:#f3c2b9;
+        --btn-tint-dark:#e0977f;
+        --btn-shadow:#8a2c1f;
+        --btn-accent-light: var(--red);
+        --btn-accent-dark: var(--red-dark);
+        --btn-glow: rgba(224,72,58,0.8);
+    }
+
+    .menu-btn.c-opensale {
+        --btn-tint-light:#fef1de;
+        --btn-tint-mid:#f8d29c;
+        --btn-tint-dark:#e8a955;
+        --btn-shadow:#5c2d0a;
+        --btn-accent-light: var(--orange);
+        --btn-accent-dark: var(--orange-dark);
+        --btn-glow: rgba(232,130,58,0.8);
+    }
+
+    .menu-btn.c-cardsale {
+        --btn-tint-light:#e9f1fc;
+        --btn-tint-mid:#b7d3f4;
+        --btn-tint-dark:#7aabe6;
+        --btn-shadow:#1f4f9e;
+        --btn-accent-light: var(--blue-light);
+        --btn-accent-dark: var(--blue-dark);
+        --btn-glow: rgba(47,111,206,0.85);
+    }
+
+    .menu-btn.c-cashsale {
+        --btn-tint-light:#e9faef;
+        --btn-tint-mid:#b6e8c6;
+        --btn-tint-dark:#79cf94;
+        --btn-shadow:#1c6b34;
+        --btn-accent-light: var(--green-light);
+        --btn-accent-dark: var(--green-dark);
+        --btn-glow: rgba(47,158,79,0.85);
+    }
+
+    .menu-btn.c-void,
+    .menu-btn.c-opensale,
+    .menu-btn.c-cardsale,
+    .menu-btn.c-cashsale {
+        background: linear-gradient(155deg, var(--btn-tint-light), var(--btn-tint-mid) 55%, var(--btn-tint-dark) 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -3px 6px rgba(0,0,0,0.12), 0 5px 0 var(--btn-shadow), 0 9px 12px rgba(0,0,0,0.35);
+    }
+
+    .menu-btn.c-void .icon-box,
+    .menu-btn.c-opensale .icon-box,
+    .menu-btn.c-cardsale .icon-box,
+    .menu-btn.c-cashsale .icon-box {
+        background: linear-gradient(155deg, var(--btn-accent-light), var(--btn-accent-dark) 100%);
+    }
+
+    .menu-btn.c-void .label,
+    .menu-btn.c-opensale .label,
+    .menu-btn.c-cardsale .label,
+    .menu-btn.c-cashsale .label {
+        color: var(--btn-shadow);
+    }
+
+    /* Selected/active state for the colour-coded buttons - same inversion
+       idea as the base .menu-btn.selected, but swapping to/from each
+       button's own accent colour instead of navy. */
+    .menu-btn.c-void.selected,
+    .menu-btn.c-opensale.selected,
+    .menu-btn.c-cardsale.selected,
+    .menu-btn.c-cashsale.selected {
+        background: linear-gradient(155deg, var(--btn-accent-light), var(--btn-accent-dark) 100%);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -3px 6px rgba(0,0,0,0.35), 0 5px 0 var(--btn-shadow), 0 9px 12px rgba(0,0,0,0.4);
+    }
+
+    .menu-btn.c-void.selected .icon-box,
+    .menu-btn.c-opensale.selected .icon-box,
+    .menu-btn.c-cardsale.selected .icon-box,
+    .menu-btn.c-cashsale.selected .icon-box {
+        background: linear-gradient(155deg, var(--btn-tint-light), var(--btn-tint-mid) 55%, var(--btn-tint-dark) 100%);
+    }
+
+    .menu-btn.c-void.selected .m-icon,
+    .menu-btn.c-opensale.selected .m-icon,
+    .menu-btn.c-cardsale.selected .m-icon,
+    .menu-btn.c-cashsale.selected .m-icon {
+        color: var(--btn-accent-dark);
+    }
+
+    .menu-btn.c-void.selected .label,
+    .menu-btn.c-opensale.selected .label,
+    .menu-btn.c-cardsale.selected .label,
+    .menu-btn.c-cashsale.selected .label {
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    /* "Ready to take payment" pulse: js/dashboard.js adds .pay-attn to
+       CASH SALE and CARD SALE the moment the cart holds at least one
+       item, and removes it again once the cart is emptied (void'd,
+       cleared, or the sale completes) - a blink + zoom-in/out cue that
+       draws the cashier's eye straight to the payment buttons instead
+       of them having to notice the cart total changed. */
+    @keyframes payAttnPulse {
+        0%, 100%  { transform: scale(1);     filter: brightness(1)    drop-shadow(0 0 0 transparent); }
+        50%       { transform: scale(1.07);  filter: brightness(1.35) drop-shadow(0 0 16px var(--btn-glow)); }
+    }
+
+    .menu-btn.pay-attn {
+        animation: payAttnPulse 0.85s ease-in-out infinite;
+    }
+
+
+    /* ================================================================
+       TILL LOGIN SCREEN (styles)
+       Everything below belongs to the login screen only. It is shown
+       first; the "TILL DASHBOARD SCREEN" markup further down starts
+       hidden and is revealed after a successful login.
+       ================================================================ */
+
+    .login-container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 1.4vh 1.4vw;
+        gap: 1.2vh;
+        background:
+            radial-gradient(ellipse at 30% 20%, rgba(230,185,60,0.10), transparent 55%),
+            radial-gradient(ellipse at 80% 80%, rgba(230,185,60,0.08), transparent 55%),
+            var(--bg-black);
+        color: #fff;
+    }
+
+    /* Top-center error popup (wrong User ID / PIN on login) - fixed to
+       the viewport, dead-center horizontally, just under the very top
+       edge, above everything else on the screen. */
+    .login-error-popup {
+        position: fixed;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-14px);
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        gap: 0.6vw;
+        background: linear-gradient(to bottom, var(--red), var(--red-dark));
+        color: #fff;
+        font-weight: bold;
+        font-size: clamp(14px, 1.2vw, 18px);
+        letter-spacing: 0.3px;
+        padding: 1.1vh 1.6vw;
+        border-radius: 8px;
+        border: 1.5px solid #6e1c14;
+        box-shadow: 0 10px 26px rgba(0,0,0,0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .login-error-popup.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .login-error-popup .popup-icon {
+        width: clamp(18px, 1.6vw, 24px);
+        height: clamp(18px, 1.6vw, 24px);
+        flex: 0 0 auto;
+    }
+
+    /* Header - a 3-column grid (instead of flex space-between) so the
+       "TILL LOGIN" title sits exactly in the middle of the header no
+       matter how wide the logo or the date/time blocks are. */
+    .login-header {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        padding: 1.2vh 0 1.5vh;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .login-header .login-title { order: 1; justify-self: start; }
+    .login-header .brand { order: 2; justify-self: center; }
+    .login-header .header-time { order: 3; justify-self: end; }
+
+    .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* Crops the AMSONS.png artwork down to just the "Amsons" wordmark,
+       hiding its subtitle/divider whitespace (same technique as the
+       dashboard topbar's .logo-crop, scoped here under .brand so the
+       two don't collide). */
+    .brand .logo-crop {
+        --logo-h: clamp(56px, 5.8vw, 88px);
+        height: var(--logo-h);
+        overflow: hidden;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .brand .logo-crop img {
+        height: calc(var(--logo-h) * 2.276);
+        width: auto;
+        display: block;
+        margin-top: calc(var(--logo-h) * -0.289);
+    }
+
+    .login-title {
+        display: flex;
+        align-items: center;
+        gap: 0.8vw;
+    }
+
+    .login-title .lock-icon {
+        width: clamp(34px, 3vw, 46px);
+        height: clamp(34px, 3vw, 46px);
+        color: var(--gold);
+    }
+
+    .login-title h1 {
+        font-size: clamp(27px, 2.7vw, 39px);
+        color: var(--gold);
+        letter-spacing: 1px;
+    }
+
+    .login-title p {
+        font-size: clamp(13px, 1.1vw, 16px);
+        color: var(--text-muted);
+        margin-top: 0.2vh;
+    }
+
+    .header-time {
+        text-align: right;
+    }
+
+    .header-time .date {
+        font-size: clamp(14px, 1.2vw, 18px);
+        color: #e8e8e8;
+        letter-spacing: 1px;
+    }
+
+    .header-time .time {
+        font-size: clamp(29px, 2.7vw, 41px);
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .header-time .time .ampm {
+        font-size: clamp(14px, 1.2vw, 18px);
+        color: var(--gold);
+        font-weight: bold;
+        margin-left: 4px;
+    }
+
+    /* Main Body */
+    .login-body {
+        flex: 1 1 auto;
+        display: flex;
+        gap: 1.2vw;
+        min-height: 0;
+    }
+
+    .login-panel {
+        border: 1px solid var(--border-gold);
+        background: linear-gradient(160deg, #0a0a0a 0%, #000000 100%);
+        border-radius: 18px;
+    }
+
+    /* Left Panel (credentials form) */
+    .login-left-panel {
+        flex: 1 1 55%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.8vh 2.6vw;
+        gap: 1.2vh;
+    }
+
+    .avatar-circle {
+        width: clamp(56px, 6vw, 88px);
+        height: clamp(56px, 6vw, 88px);
+        border-radius: 50%;
+        border: 2px solid var(--gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .avatar-circle svg {
+        width: 55%;
+        height: 55%;
+        color: var(--gold);
+    }
+
+    /* Face ID avatar (login screen only) - bigger, filled edge-to-edge
+       by a tightly-cropped copy of amFace.png (amFace_avatar.png, see
+       Frontend note), pulses to read as a live "tap to scan" control,
+       and shows both an inward-sweeping scan-line and a soft pulsing
+       inner glow so light visibly "blinks" from inside the face. The
+       camera feed (when active) is shown inside this same circle
+       instead of a separate popup. */
+    #faceLoginAvatar {
+        width: clamp(132px, 14vw, 200px);
+        height: clamp(132px, 14vw, 200px);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        background: radial-gradient(circle at 45% 40%, #0a0a0a 0%, #000000 78%);
+        border-width: 3px;
+        animation: faceIdPulse 2.4s ease-in-out infinite;
+        transition: transform 0.15s;
+    }
+
+    #faceLoginAvatar:hover { transform: scale(1.04); }
+    #faceLoginAvatar:active { transform: scale(0.97); }
+
+    #faceLoginAvatar .face-photo,
+    #faceLoginAvatar video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    /* contain (not cover): shows the whole picture with nothing cut
+       off, scaled up so it touches the circle top-to-bottom - the tight
+       crop in amFace_avatar.png keeps the leftover side gaps small. The
+       gentle zoom is synced to the same 2.4s cycle as the inner-glow
+       blink so the picture breathes in time with the light. */
+    #faceLoginAvatar .face-photo {
+        object-fit: contain;
+        animation: faceImgZoom 2.4s ease-in-out infinite;
+    }
+
+    @keyframes faceImgZoom {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.045); }
+    }
+
+    #faceLoginAvatar video {
+        object-fit: cover;
+    }
+
+    #faceLoginAvatar .inner-glow {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 42%, rgba(242,205,108,0.85) 0%, rgba(230,185,60,0.35) 35%, transparent 68%);
+        opacity: 0.18;
+        animation: faceInnerBlink 2.4s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 1;
+        mix-blend-mode: screen;
+    }
+
+    #faceLoginAvatar.active .inner-glow {
+        background: radial-gradient(circle at 50% 42%, rgba(150,255,170,0.85) 0%, rgba(69,193,105,0.35) 35%, transparent 68%);
+        animation-duration: 1s;
+    }
+
+    #faceLoginAvatar .scan-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 3px;
+        top: 4%;
+        background: linear-gradient(to right, transparent, var(--gold-light), transparent);
+        opacity: 0.85;
+        animation: faceScanSweep 2.4s ease-in-out infinite;
+        z-index: 2;
+    }
+
+    #faceLoginAvatar.active .scan-line {
+        background: linear-gradient(to right, transparent, var(--green-light), transparent);
+        animation-duration: 1s;
+    }
+
+    @keyframes faceIdPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(230,185,60,0.55); }
+        50% { box-shadow: 0 0 0 10px rgba(230,185,60,0); }
+    }
+
+    @keyframes faceInnerBlink {
+        0%, 100% { opacity: 0.15; }
+        50% { opacity: 0.8; }
+    }
+
+    @keyframes faceScanSweep {
+        0%, 100% { top: 6%; }
+        50% { top: 90%; }
+    }
+
+    .face-login-hint {
+        font-size: clamp(10px, 0.85vw, 12px);
+        color: var(--gold);
+        letter-spacing: 0.5px;
+        margin-top: -0.4vh;
+        text-align: center;
+    }
+
+    .face-login-hint.ok {
+        color: #45c169;
+        font-weight: bold;
+    }
+
+    .employee-label {
+        font-size: clamp(14px, 1.3vw, 19px);
+        font-weight: bold;
+        letter-spacing: 2px;
+        color: #fff;
+    }
+
+    .divider-line {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--border-gold), transparent);
+        margin-bottom: 0.4vh;
+    }
+
+    .form-fields {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.1vh;
+    }
+
+    .input-wrap {
+        position: relative;
+        width: 100%;
+    }
+
+    .input-wrap svg.field-icon {
+        position: absolute;
+        left: 1vw;
+        top: 50%;
+        transform: translateY(-50%);
+        width: clamp(16px, 1.3vw, 20px);
+        height: clamp(16px, 1.3vw, 20px);
+        color: var(--gold);
+    }
+
+    .input-wrap input {
+        width: 100%;
+        background: var(--panel-light);
+        border: 1px solid var(--border-gold);
+        border-radius: 10px;
+        padding: 1.1vh 2.6vw 1.1vh 2.8vw;
+        color: #fff;
+        font-size: clamp(13px, 1.05vw, 16px);
+        outline: none;
+    }
+
+    .input-wrap input::placeholder {
+        color: #7d7d82;
+    }
+
+    .input-wrap input:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 2px rgba(230,185,60,0.15);
+    }
+
+    /* Login screen only: a bold fixed label above each field, plus a
+       narrower centered form and slightly bigger boxes. Scoped under
+       #loginScreen so the Employee Registration screen's fields (which
+       share the same .form-fields/.input-wrap classes) are untouched. */
+    #loginScreen .form-fields {
+        width: 100%;
+        margin: 0 auto;
+        gap: 0.9vh;
+    }
+
+    #loginScreen .field-label {
+        font-size: clamp(11px, 0.95vw, 13px);
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        color: var(--gold);
+    }
+
+    #loginScreen .input-wrap {
+        margin-bottom: 2vh;
+    }
+
+    #loginScreen .input-wrap input {
+        padding: 2vh 2.6vw 2vh 2.8vw;
+        font-size: clamp(17px, 1.4vw, 20px);
+    }
+
+    #loginScreen .login-btn {
+        padding: 1.4vh 0;
+        font-size: clamp(20px, 1.8vw, 25px);
+    }
+
+    #loginScreen .bottom-row {
+        gap: 1.6vw;
+        margin-top: 1.6vh;
+    }
+
+    /* User ID field: "AMS-" is a fixed, non-editable, bold prefix - the
+       employee only types the number that comes after it. The border/
+       background live on the wrapper itself (not the bare <input>) so
+       the icon and "AMS-" sit inside the same pill as the input, not
+       to the left of it. */
+    #loginScreen .input-wrap.id-wrap {
+        display: flex;
+        align-items: center;
+        background: var(--panel-light);
+        border: 1px solid var(--border-gold);
+        border-radius: 10px;
+        padding: 0 2.6vw 0 1vw;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    #loginScreen .input-wrap.id-wrap:focus-within {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 2px rgba(230,185,60,0.15);
+    }
+
+    #loginScreen .input-wrap.id-wrap .field-icon {
+        position: static;
+        transform: none;
+        flex: 0 0 auto;
+    }
+
+    #loginScreen .input-wrap.id-wrap .id-fixed {
+        font-weight: bold;
+        color: var(--gold);
+        font-size: clamp(17px, 1.4vw, 20px);
+        margin-left: 0.6vw;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+
+    #loginScreen .input-wrap.id-wrap input {
+        background: transparent;
+        border: none;
+        padding: 2vh 0 2vh 0.3vw;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    #loginScreen .input-wrap.id-wrap input:focus {
+        box-shadow: none;
+    }
+
+    .input-wrap .toggle-eye {
+        position: absolute;
+        right: 1vw;
+        top: 50%;
+        transform: translateY(-50%);
+        width: clamp(18px, 1.4vw, 22px);
+        height: clamp(18px, 1.4vw, 22px);
+        color: var(--gold);
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+    .input-wrap .toggle-eye svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .login-btn {
+        width: 100%;
+        border: 1.5px solid #8a6a1c;
+        border-radius: 10px;
+        padding: 1.3vh 0;
+        font-size: clamp(16px, 1.4vw, 21px);
+        font-weight: bold;
+        letter-spacing: 1px;
+        color: #1a1300;
+        background: linear-gradient(to bottom, var(--gold-light), var(--gold-dark));
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -3px 5px rgba(0,0,0,0.15), 0 7px 0 #8a6a1c, 0 12px 16px rgba(0,0,0,0.4);
+        transform: translateY(0);
+        transition: transform 0.08s, box-shadow 0.08s;
+    }
+
+    .login-btn:active {
+        transform: translateY(7px);
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.3), 0 1px 0 #8a6a1c, 0 2px 3px rgba(0,0,0,0.25);
+    }
+
+    .login-btn.error {
+        animation: shake 0.35s;
+        background: linear-gradient(to bottom, #e0483a, #a52a1f);
+        color: #fff;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-6px); }
+        75% { transform: translateX(6px); }
+    }
+
+    .bottom-row {
+        width: 100%;
+        display: flex;
+        gap: 0.8vw;
+    }
+
+    .ghost-btn {
+        flex: 1 1 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5vw;
+        background: linear-gradient(to bottom, #17181a, #0a0b0c);
+        border: 1.5px solid var(--border-gold);
+        border-radius: 10px;
+        padding: 0.95vh 0;
+        color: var(--gold);
+        font-size: clamp(11px, 0.95vw, 13px);
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 5px 0 #000, 0 9px 12px rgba(0,0,0,0.4);
+        transform: translateY(0);
+        transition: transform 0.08s, box-shadow 0.08s;
+    }
+
+    .ghost-btn svg {
+        width: clamp(16px, 1.3vw, 20px);
+        height: clamp(16px, 1.3vw, 20px);
+        color: var(--gold);
+    }
+
+    .ghost-btn:active {
+        background: linear-gradient(to bottom, #0a0b0c, #17181a);
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 #000;
+        transform: translateY(5px);
+    }
+
+    .conn-status {
+        text-align: center;
+        font-size: clamp(11px, 0.9vw, 14px);
+        color: var(--text-muted);
+        min-height: 2vh;
+    }
+
+    .conn-status.ok { color: #45c169; font-weight: bold; }
+
+    /* Right Panel - Login Keypad (renamed "login-*" so it never collides
+       with the dashboard's own .keypad-grid / .key-btn classes above) */
+    .login-right-panel {
+        flex: 0 0 34%;
+        display: flex;
+        flex-direction: column;
+        padding: 1.3vh 1vw;
+        gap: 0.8vh;
+    }
+
+    .login-keypad-grid {
+        flex: 1 1 auto;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 1vh 1vw;
+        min-height: 0;
+    }
+
+    /* Same "puffy glossy clay" 3D style and sizing as the dashboard's
+       .key-btn — every key (digits, backspace, BACK/CLEAR) fills its
+       grid cell fully so the whole keypad reads as one uniform, evenly
+       spaced set, with the gap between keys coming from the grid's own
+       `gap`. Matches the till-login reference art: dark glass keys with
+       a thin gold border and gold digits. Pressing a key fires a bright
+       white "blink" (a white overlay flashed via ::after) on top of
+       the usual press-down/glow. */
+    .login-key-btn {
+        border: 1.5px solid var(--border-gold);
+        border-radius: 18%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 32% 26%, #2b2b2e 0%, #19191b 45%, #0a0a0b 100%);
+        color: var(--gold);
+        font-size: clamp(28px, 3.4vw, 48px);
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.08), inset 0 -7px 11px rgba(0,0,0,0.5), 0 0 10px rgba(230,185,60,0.45), 0 0 20px rgba(230,185,60,0.22), 0 7px 0 #4a3810, 0 12px 15px rgba(0,0,0,0.5);
+        transform: translateY(0);
+        transition: box-shadow 0.15s, transform 0.08s;
+    }
+
+    .login-key-btn:active {
+        transform: translateY(7px);
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 0 14px rgba(230,185,60,0.65), 0 0 26px rgba(230,185,60,0.35), 0 1px 0 #4a3810, 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    /* White "blink": a bright white glow radiating outward from the
+       key (not a fill) so it reads clearly as a flash of light no
+       matter how light the key's own background is. */
+    .login-key-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        box-shadow: 0 0 0 0 rgba(255,255,255,0);
+    }
+
+    @keyframes loginKeyBlink {
+        0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        30%  { box-shadow: 0 0 24px 8px rgba(255,255,255,0.95); }
+        100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+    }
+
+    .login-key-btn.flash::after {
+        animation: loginKeyBlink 0.28s ease-out;
+    }
+
+    /* Backspace (del) keeps the same dark/gold key styling as the
+       digit keys. BACK/CLEAR stays the solid gold "action" key so it
+       reads as the button to press to leave the keypad. */
+    .login-key-btn.del svg {
+        width: clamp(22px, 2vw, 30px);
+        height: clamp(22px, 2vw, 30px);
+    }
+
+    .login-key-btn.back {
+        background: radial-gradient(circle at 32% 26%, var(--gold-light) 0%, #dbaf3f 45%, var(--gold-dark) 100%);
+        color: #1a1300;
+        border-color: #8a6a1c;
+        box-shadow: inset 0 3px 5px rgba(255,255,255,0.7), inset 0 -7px 11px rgba(0,0,0,0.12), 0 0 5px rgba(230,185,60,0.3), 0 7px 0 #8a6a1c, 0 12px 15px rgba(0,0,0,0.35);
+        flex-direction: column;
+        gap: 4px;
+        font-size: clamp(13px, 1.1vw, 17px);
+    }
+
+    .login-key-btn.back:active {
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.2), 0 0 11px rgba(255,210,90,0.6), 0 0 22px rgba(255,210,90,0.3), 0 1px 0 #8a6a1c, 0 2px 4px rgba(0,0,0,0.25);
+    }
+
+    .login-key-btn.back svg {
+        width: clamp(18px, 1.6vw, 24px);
+        height: clamp(18px, 1.6vw, 24px);
+    }
+
+    .osk-btn {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6vw;
+        border: 1.5px solid var(--border-gold);
+        border-radius: 10px;
+        background: linear-gradient(to bottom, #17181a, #0a0b0c);
+        color: var(--gold);
+        font-size: clamp(11px, 0.95vw, 14px);
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        padding: 1vh 0;
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 5px 0 #000, 0 9px 12px rgba(0,0,0,0.4);
+        transform: translateY(0);
+        transition: transform 0.08s, box-shadow 0.08s;
+    }
+
+    .osk-btn svg {
+        width: clamp(18px, 1.6vw, 24px);
+        height: clamp(18px, 1.6vw, 24px);
+    }
+
+    .osk-btn:active {
+        background: linear-gradient(to bottom, #0a0b0c, #17181a);
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 #000;
+        transform: translateY(5px);
+    }
+
+    /* Footer */
+    .login-footer {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 1vh;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        font-size: clamp(11px, 0.95vw, 14px);
+        color: var(--text-muted);
+    }
+
+    .login-footer .secure {
+        display: flex;
+        align-items: center;
+        gap: 0.5vw;
+    }
+
+    .login-footer svg {
+        width: clamp(15px, 1.2vw, 18px);
+        height: clamp(15px, 1.2vw, 18px);
+        color: var(--gold);
+    }
+
+    .login-footer .sep {
+        margin: 0 0.6vw;
+        color: rgba(255,255,255,0.2);
+    }
+
+    .login-footer .help {
+        display: flex;
+        align-items: center;
+        gap: 0.5vw;
+        cursor: pointer;
+    }
+
+    /* On-Screen Keyboard Overlay (login screen only) */
+    .osk-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        z-index: 50;
+    }
+
+    .osk-overlay.open { display: flex; }
+
+    .osk-panel {
+        width: min(900px, 96vw);
+        margin-bottom: 2vh;
+        background: var(--panel);
+        border: 1px solid var(--border-gold);
+        border-radius: 10px;
+        padding: 1.4vh 1vw;
+        display: flex;
+        flex-direction: column;
+        gap: 0.7vh;
+    }
+
+    .osk-row {
+        display: flex;
+        gap: 0.4vw;
+        justify-content: center;
+    }
+
+    .osk-key {
+        flex: 1 1 0;
+        padding: 1.3vh 0;
+        text-align: center;
+        background: linear-gradient(to bottom, #2c2d33, #17181b);
+        border: 1.5px solid #000;
+        border-radius: 5px;
+        color: #fff;
+        font-size: clamp(13px, 1.15vw, 17px);
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 0 #000, 0 6px 8px rgba(0,0,0,0.4);
+        transform: translateY(0);
+        transition: transform 0.08s, box-shadow 0.08s;
+    }
+
+    .osk-key:active {
+        background: #34363c;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 #000;
+        transform: translateY(4px);
+    }
+
+    .osk-key.space { flex: 6 1 0; }
+    .osk-key.wide2 { flex: 2 1 0; color: var(--gold); }
+
+    /* ================================================================
+       EMPLOYEE REGISTRATION SCREEN (styles)
+       ================================================================ */
+
+    .register-prompt {
+        text-align: center;
+        font-size: clamp(12px, 1vw, 15px);
+        color: var(--text-muted);
+        margin-top: 1vh;
+    }
+
+    .register-prompt .link-btn {
+        background: none;
+        border: none;
+        color: var(--gold);
+        font-weight: bold;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: inherit;
+        padding: 0;
+    }
+
+    .id-field-wrap {
+        width: 100%;
+    }
+
+    .id-label {
+        font-size: clamp(10px, 0.85vw, 12px);
+        color: var(--text-muted);
+        letter-spacing: 1px;
+        margin-bottom: 0.5vh;
+    }
+
+    .id-display {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.6vw;
+        background: var(--panel-light);
+        border: 1.5px solid var(--border-gold);
+        border-radius: 6px;
+        padding: 1.4vh 1vw;
+        box-sizing: border-box;
+    }
+
+    .id-display .id-key-icon {
+        width: clamp(16px, 1.3vw, 20px);
+        height: clamp(16px, 1.3vw, 20px);
+        color: var(--gold);
+        flex: 0 0 auto;
+    }
+
+    .id-display .id-prefix {
+        color: var(--gold);
+        font-weight: bold;
+        font-size: clamp(16px, 1.4vw, 20px);
+        letter-spacing: 1px;
+    }
+
+    .id-display .id-number {
+        color: #fff;
+        font-weight: bold;
+        font-size: clamp(16px, 1.4vw, 20px);
+        letter-spacing: 1px;
+    }
+
+    .id-display .id-lock {
+        margin-left: auto;
+        width: clamp(14px, 1.2vw, 18px);
+        height: clamp(14px, 1.2vw, 18px);
+        color: var(--gold);
+        opacity: 0.7;
+        flex: 0 0 auto;
+    }
+
+    .pin-hint {
+        font-size: clamp(9px, 0.8vw, 11px);
+        color: var(--text-muted);
+        margin-top: -0.8vh;
+        padding-left: 0.3vw;
+    }
+
+    .register-right-panel {
+        gap: 0.8vh;
+    }
+
+    .selfie-panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6vh;
+        width: 100%;
+    }
+
+    .selfie-box {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        background: #000;
+        border: 1.5px solid var(--border-gold);
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .selfie-box video,
+    .selfie-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .selfie-box .selfie-placeholder {
+        color: var(--text-muted);
+        font-size: clamp(11px, 0.95vw, 14px);
+        text-align: center;
+        padding: 1vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8vh;
+    }
+
+    .selfie-box .selfie-placeholder svg {
+        width: clamp(30px, 3vw, 44px);
+        height: clamp(30px, 3vw, 44px);
+        color: var(--gold);
+        opacity: 0.6;
+    }
+
+    .selfie-hd-badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: rgba(0,0,0,0.6);
+        border: 1px solid var(--border-gold);
+        color: var(--gold);
+        font-size: 10px;
+        font-weight: bold;
+        padding: 1px 6px;
+        border-radius: 3px;
+        letter-spacing: 1px;
+    }
+
+    .selfie-btn-row {
+        display: flex;
+        gap: 0.6vw;
+        width: 100%;
+        flex: 0 0 auto;
+    }
+
+    .selfie-step-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4vh;
+        flex: 0 0 auto;
+    }
+
+    .selfie-step-text {
+        font-size: clamp(11px, 0.95vw, 14px);
+        color: var(--gold);
+        font-weight: bold;
+        letter-spacing: 0.3px;
+        text-align: center;
+    }
+
+    .selfie-dots {
+        display: flex;
+        gap: 0.4vw;
+    }
+
+    .selfie-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--panel-light);
+        border: 1.5px solid var(--border-gold);
+    }
+
+    .selfie-dot.done {
+        background: var(--gold);
+        border-color: var(--gold);
+    }
+
+    .btn-sm {
+        padding: 1.1vh 0;
+        font-size: clamp(12px, 1.05vw, 15px);
+    }
+
+    /* .login-key-btn is already a fixed size matching the dashboard's
+       keypad, so the register keypad needs no extra sizing here. */
+    .reg-keypad-grid {
+        flex: 0 0 34vh;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 1vh 1vw;
+    }
+
+    /* This grid shares its panel with the camera box above it, so its
+       keys get a smaller font cap than the dedicated login keypad's. */
+    .reg-keypad-grid .login-key-btn {
+        font-size: clamp(22px, 2.4vw, 32px);
+    }
+
+    .reg-keypad-grid .login-key-btn.back {
+        font-size: clamp(11px, 1vw, 14px);
+    }
+
+    /* ================================================================
+       CHOOSE YOUR BRANCH SCREEN (styles)
+       Shown right after a successful login, before the dashboard.
+       Reuses the login screen's dark background/header look.
+       ================================================================ */
+
+    .branch-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2.2vw;
+        padding: 1vh 1vw;
+    }
+
+    .branch-subtitle {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: clamp(13px, 1.1vw, 16px);
+        letter-spacing: 1px;
+        margin-top: -0.6vh;
+    }
+
+    .branch-card {
+        flex: 0 1 26vw;
+        max-width: 380px;
+        min-width: 230px;
+        display: flex;
+        flex-direction: column;
+        border: 1.5px solid var(--border-gold);
+        border-radius: 12px;
+        background: var(--panel);
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 10px 0 #000, 0 16px 22px rgba(0,0,0,0.5);
+        transform: translateY(0);
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .branch-card:active {
+        transform: translateY(8px);
+        box-shadow: 0 2px 0 #000, 0 4px 8px rgba(0,0,0,0.4);
+    }
+
+    .branch-card .branch-img-wrap {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border-bottom: 1.5px solid var(--border-gold);
+        background: #000;
+    }
+
+    .branch-card .branch-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .branch-card .branch-label {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2vh 1vw;
+        color: var(--gold);
+        font-weight: bold;
+        font-size: clamp(24px, 2.5vw, 34px);
+        letter-spacing: 0.5px;
+        line-height: 1.25;
+    }
+</style>
+</head>
+<body>
+
+<!-- Icon sprite -->
+<svg style="position:absolute; width:0; height:0; overflow:hidden;">
+<defs>
+
+    <symbol id="i-till" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="12" rx="1.5" fill="currentColor"/>
+        <rect x="5.2" y="6" width="13.6" height="7.4" rx="0.5" fill="#000"/>
+        <rect x="9" y="16.5" width="6" height="2" fill="currentColor"/>
+        <rect x="6" y="19" width="12" height="1.8" rx="0.9" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-person" viewBox="0 0 24 24">
+        <circle cx="12" cy="7.5" r="4" fill="currentColor"/>
+        <path d="M4 20.5c0-4.7 3.6-8.5 8-8.5s8 3.8 8 8.5" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-mosque" viewBox="0 0 24 24">
+        <circle cx="3.2" cy="6.4" r="0.9" fill="currentColor"/>
+        <rect x="2.5" y="7" width="1.4" height="9" fill="currentColor"/>
+        <path d="M1.6 16h2.2v3H1.6z" fill="currentColor"/>
+        <circle cx="20.8" cy="6.4" r="0.9" fill="currentColor"/>
+        <rect x="20.1" y="7" width="1.4" height="9" fill="currentColor"/>
+        <path d="M19.2 16h2.2v3h-2.2z" fill="currentColor"/>
+        <path d="M12 2.2c-2.6 2.4-3.7 5-3.9 6.8h7.8c-0.2-1.8-1.3-4.4-3.9-6.8z" fill="currentColor"/>
+        <circle cx="12" cy="2.3" r="0.7" fill="currentColor"/>
+        <rect x="5.6" y="9.4" width="12.8" height="9.6" fill="currentColor"/>
+        <path d="M10.6 19v-3.4a1.4 1.4 0 012.8 0V19z" fill="#000"/>
+        <rect x="4.6" y="18.8" width="14.8" height="1.6" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-gear" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M12 8.4a3.6 3.6 0 100 7.2 3.6 3.6 0 000-7.2zm9 3.6a8.9 8.9 0 00-.15-1.6l1.9-1.5-1.9-3.3-2.25.75a9 9 0 00-2.75-1.6L15.4 2h-3.8l-.45 2.15a9 9 0 00-2.75 1.6L6.15 5 4.25 8.3l1.9 1.5a8.9 8.9 0 000 3.2l-1.9 1.5 1.9 3.3 2.25-.75a9 9 0 002.75 1.6L11.6 22h3.8l.45-2.15a9 9 0 002.75-1.6l2.25.75 1.9-3.3-1.9-1.5c.1-.5.15-1.05.15-1.6z"/>
+    </symbol>
+
+    <symbol id="i-pause" viewBox="0 0 24 24">
+        <rect x="6" y="5" width="4.2" height="14" rx="1" fill="currentColor"/>
+        <rect x="13.8" y="5" width="4.2" height="14" rx="1" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-undo" viewBox="0 0 24 24">
+        <path d="M6 8H4V3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4.2 8.6A8 8 0 1112 20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/>
+        <line x1="15.3" y1="15.3" x2="21" y2="21" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-percent" viewBox="0 0 24 24">
+        <circle cx="7" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="17" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+        <line x1="5" y1="19" x2="19" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-block" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/>
+        <line x1="5.8" y1="18.2" x2="18.2" y2="5.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-tag" viewBox="0 0 24 24">
+        <path d="M3 4h9l9 9-9 9-9-9z" fill="currentColor"/>
+        <circle cx="8" cy="9" r="1.6" fill="#000"/>
+    </symbol>
+
+    <symbol id="i-voucher" viewBox="0 0 24 24">
+        <rect x="2.5" y="6" width="19" height="12" rx="2" fill="currentColor"/>
+        <circle cx="2.5" cy="12" r="1.6" fill="var(--bg,#e9ecf1)"/>
+        <circle cx="21.5" cy="12" r="1.6" fill="var(--bg,#e9ecf1)"/>
+        <line x1="8.5" y1="7" x2="8.5" y2="17" stroke="#000" stroke-width="1.4" stroke-dasharray="2 2"/>
+    </symbol>
+
+    <symbol id="i-card" viewBox="0 0 24 24">
+        <rect x="2.5" y="5" width="19" height="14" rx="2" fill="currentColor"/>
+        <rect x="2.5" y="8.4" width="19" height="3.2" fill="#000"/>
+        <rect x="4.5" y="14.5" width="6" height="1.8" rx="0.9" fill="#fff"/>
+    </symbol>
+
+    <symbol id="i-cash" viewBox="0 0 24 24">
+        <rect x="2" y="6" width="20" height="12" rx="1.5" fill="currentColor"/>
+        <circle cx="12" cy="12" r="3" fill="#000"/>
+        <circle cx="4.6" cy="12" r="1" fill="#000"/>
+        <circle cx="19.4" cy="12" r="1" fill="#000"/>
+    </symbol>
+
+    <symbol id="i-arrow-left" viewBox="0 0 24 24">
+        <path d="M20 12H6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="i-backspace" viewBox="0 0 24 24">
+        <path d="M8 5h12a1 1 0 011 1v12a1 1 0 01-1 1H8l-6-7 6-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <line x1="11.5" y1="9.5" x2="17.5" y2="14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="17.5" y1="9.5" x2="11.5" y2="14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="M4 12.5l5.2 5.2L20 6.2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="i-keyboard" viewBox="0 0 24 24">
+        <rect x="2" y="6" width="20" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+        <rect x="4.5" y="8.5" width="2" height="2" fill="currentColor"/>
+        <rect x="8" y="8.5" width="2" height="2" fill="currentColor"/>
+        <rect x="11.5" y="8.5" width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="8.5" width="2" height="2" fill="currentColor"/>
+        <rect x="18.5" y="8.5" width="1.5" height="2" fill="currentColor"/>
+        <rect x="4.5" y="12" width="2" height="2" fill="currentColor"/>
+        <rect x="8" y="12" width="2" height="2" fill="currentColor"/>
+        <rect x="11.5" y="12" width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="12" width="2" height="2" fill="currentColor"/>
+        <rect x="18.5" y="12" width="1.5" height="2" fill="currentColor"/>
+        <rect x="6" y="15" width="12" height="2" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M5 7h14l-1.2 13.2a1.5 1.5 0 01-1.5 1.3H7.7a1.5 1.5 0 01-1.5-1.3z" fill="currentColor"/>
+        <rect x="3" y="4.5" width="18" height="2" rx="1" fill="currentColor"/>
+        <rect x="9" y="2" width="6" height="2" rx="1" fill="currentColor"/>
+        <line x1="10" y1="9.5" x2="10" y2="18" stroke="#000" stroke-width="1.2"/>
+        <line x1="14" y1="9.5" x2="14" y2="18" stroke="#000" stroke-width="1.2"/>
+    </symbol>
+
+    <symbol id="i-logout" viewBox="0 0 24 24">
+        <path d="M9 4H5a1 1 0 00-1 1v14a1 1 0 001 1h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 8l5 4-5 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="19" y1="12" x2="9.5" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-lock" viewBox="0 0 24 24">
+        <rect x="4.5" y="10.5" width="15" height="10" rx="1.5" fill="currentColor"/>
+        <path d="M7.5 10.5V7.5a4.5 4.5 0 019 0v3" fill="none" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="12" cy="15" r="1.6" fill="#000"/>
+        <rect x="11.2" y="15.5" width="1.6" height="2.6" fill="#000"/>
+    </symbol>
+
+    <!-- Category icons -->
+    <symbol id="i-blackseed" viewBox="0 0 48 48">
+        <rect x="17" y="4" width="14" height="6" rx="1.5" fill="#1c1c1c"/>
+        <ellipse cx="24" cy="4" rx="4" ry="2" fill="#e77aa0"/>
+        <path d="M16 12h16l2 5v25a3 3 0 01-3 3H17a3 3 0 01-3-3V17z" fill="#f6f2e9" stroke="#333" stroke-width="1.2"/>
+        <rect x="14.5" y="24" width="19" height="10" fill="#1c1c1c"/>
+        <rect x="14.5" y="24" width="19" height="10" fill="none" stroke="#333" stroke-width="1"/>
+        <text x="24" y="31.2" font-size="6" fill="#e6b93c" text-anchor="middle" font-weight="bold">BS</text>
+    </symbol>
+
+    <symbol id="i-menitems" viewBox="0 0 48 48">
+        <path d="M17 6l-4.5 2.5L8 14l4 6 4.5-2.3V40h15V17.7L36 20l4-6-4.5-5.5L31 6l-3 3a4 4 0 01-8 0z" fill="#2f6da8" stroke="#1c4a78" stroke-width="1.2"/>
+    </symbol>
+
+    <symbol id="i-womenitems" viewBox="0 0 48 48">
+        <circle cx="24" cy="10" r="4" fill="#f3c9dc" stroke="#8f3a68" stroke-width="1.2"/>
+        <path d="M24 14c-3 0-5.5 2-6 5l-6 21h24l-6-21c-0.5-3-3-5-6-5z" fill="#c65b95" stroke="#8f3a68" stroke-width="1.2"/>
+    </symbol>
+
+    <symbol id="i-trending" viewBox="0 0 48 48">
+        <path d="M6 34l11-11 8 8 15-15" fill="none" stroke="#e6b93c" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M31 14h11v11" fill="none" stroke="#e6b93c" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="i-opensale" viewBox="0 0 48 48">
+        <path d="M6 8h18l18 18-18 18L6 26z" fill="#143a68"/>
+        <circle cx="15" cy="17" r="3.2" fill="#fff"/>
+        <path d="M30 30l9 9 2.3-2.3-3.2-3.2 4-1.5-12-4.5z" fill="#e6b93c"/>
+    </symbol>
+
+    <!-- Icons used only by the Till Login screen (i-mosque, i-person,
+         i-lock, i-arrow-left, i-backspace, i-logout and i-keyboard are
+         reused from the symbols already defined above) -->
+    <symbol id="i-key" viewBox="0 0 24 24">
+        <circle cx="7" cy="14" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M10.5 11.5L20 2M17 5l2.5 2.5M14 8l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-eye" viewBox="0 0 24 24">
+        <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-eye-off" viewBox="0 0 24 24">
+        <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+        <line x1="3" y1="21" x2="21" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="i-wifi" viewBox="0 0 24 24">
+        <path d="M2 8.5a15 15 0 0120 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5.5 12.5a10 10 0 0113 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M9 16.3a5 5 0 016 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="19.5" r="1.4" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 2l8 3.2v6c0 5-3.4 8.7-8 10.8-4.6-2.1-8-5.8-8-10.8v-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M8.5 12.2l2.4 2.4 4.6-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="i-help" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M9.3 9.3a2.7 2.7 0 115 1.5c0 1.7-2.5 1.7-2.5 3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="12" cy="17.2" r="1" fill="currentColor"/>
+    </symbol>
+
+    <!-- Icons used only by the Employee Registration screen -->
+    <symbol id="i-camera" viewBox="0 0 24 24">
+        <path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 011 1v11a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="i-mail" viewBox="0 0 24 24">
+        <rect x="2.5" y="5" width="19" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M3 6.5l9 7 9-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+</defs>
+</svg>
+
+<!-- ================================================================
+     TILL LOGIN SCREEN
+     Shown first. On successful login this screen is hidden and the
+     "TILL DASHBOARD SCREEN" below is revealed - see the script at the
+     bottom of the file for the login-success logic.
+     ================================================================ -->
+<div id="loginScreen" class="login-container">
+    <!-- Top-center error popup (wrong User ID / PIN) -->
+    <div class="login-error-popup" id="loginErrorPopup">
+        <svg class="popup-icon"><use href="#i-block"/></svg>
+        <span id="loginErrorText"></span>
+    </div>
+
+    <!-- Header -->
+    <div class="login-header">
+        <div class="brand">
+            <div class="logo-crop">
+                <img src="AMSONS.png" alt="Amsons">
+            </div>
+        </div>
+
+        <div class="login-title">
+            <svg class="lock-icon"><use href="#i-lock"/></svg>
+            <div>
+                <h1>TILL LOGIN</h1>
+                <p>Please enter your credentials</p>
+            </div>
+        </div>
+
+        <div class="header-time">
+            <div class="date" id="loginDate"></div>
+            <div class="time" id="loginTime"></div>
+        </div>
+    </div>
+
+    <!-- Main Body -->
+    <div class="login-body">
+        <!-- Left Panel: credentials form -->
+        <div class="login-panel login-left-panel">
+            <div class="avatar-circle" id="faceLoginAvatar" title="Tap to log in with Face ID">
+                <img class="face-photo" id="faceLoginImg" src="amFace_avatar.png" alt="Face ID">
+                <video id="faceLoginVideo" autoplay playsinline muted style="display:none;"></video>
+                <span class="inner-glow"></span>
+                <span class="scan-line"></span>
+            </div>
+            <div class="face-login-hint" id="faceLoginHint">TAP FOR FACE ID LOGIN</div>
+            <div class="employee-label">EMPLOYEE LOGIN</div>
+            <div class="divider-line"></div>
+
+            <form class="form-fields" id="loginForm" autocomplete="off">
+                <div class="field-label">USER ID</div>
+                <div class="input-wrap id-wrap">
+                    <svg class="field-icon"><use href="#i-person"/></svg>
+                    <span class="id-fixed">AMS-</span>
+                    <input type="text" id="username" placeholder="4-Digit ID" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div class="field-label">PIN</div>
+                <div class="input-wrap">
+                    <svg class="field-icon"><use href="#i-key"/></svg>
+                    <input type="password" id="password" placeholder="4-Digit PIN" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                    <button type="button" class="toggle-eye" id="toggleEye">
+                        <svg id="eyeIcon"><use href="#i-eye"/></svg>
+                    </button>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">LOGIN</button>
+            </form>
+
+            <div class="bottom-row">
+                <button class="ghost-btn" id="exitBtn" type="button"><svg><use href="#i-logout"/></svg>EXIT</button>
+                <button class="ghost-btn" id="testConnBtn" type="button"><svg><use href="#i-wifi"/></svg>TEST CONNECTION</button>
+            </div>
+            <div class="conn-status" id="connStatus"></div>
+
+            <div class="register-prompt">
+                Haven't registered yet? <button type="button" class="link-btn" id="goRegisterBtn">Register here</button>
+            </div>
+        </div>
+
+        <!-- Right Panel: login keypad -->
+        <div class="login-panel login-right-panel">
+            <div class="login-keypad-grid">
+                <button class="login-key-btn num" type="button">1</button>
+                <button class="login-key-btn num" type="button">2</button>
+                <button class="login-key-btn num" type="button">3</button>
+                <button class="login-key-btn num" type="button">4</button>
+                <button class="login-key-btn num" type="button">5</button>
+                <button class="login-key-btn num" type="button">6</button>
+                <button class="login-key-btn num" type="button">7</button>
+                <button class="login-key-btn num" type="button">8</button>
+                <button class="login-key-btn num" type="button">9</button>
+                <button class="login-key-btn del" type="button"><svg><use href="#i-backspace"/></svg></button>
+                <button class="login-key-btn num" type="button">0</button>
+                <button class="login-key-btn back" id="loginBackBtn" type="button"><svg><use href="#i-arrow-left"/></svg>BACK</button>
+            </div>
+            <button class="osk-btn" id="oskBtn" type="button"><svg><use href="#i-keyboard"/></svg>ON SCREEN KEYBOARD</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+        <div class="secure">
+            <svg><use href="#i-shield"/></svg>
+            <span>Secure System</span>
+            <span class="sep">|</span>
+            <span>Amsons Retail POS</span>
+        </div>
+        <div class="help">
+            <svg><use href="#i-help"/></svg>
+            <span>Need Help?</span>
+        </div>
+    </div>
+
+
+</div>
+
+<!-- ================================================================
+     EMPLOYEE REGISTRATION SCREEN
+     Hidden by default. Opened from the "Register here" link on the
+     login screen; on success it hands the new AMS-#### id back to the
+     login screen's username field.
+     ================================================================ -->
+<div id="registerScreen" class="login-container" style="display:none;">
+    <!-- Header -->
+    <div class="login-header">
+        <div class="brand">
+            <div class="logo-crop">
+                <img src="AMSONS.png" alt="Amsons">
+            </div>
+        </div>
+
+        <div class="login-title">
+            <svg class="lock-icon"><use href="#i-person"/></svg>
+            <div>
+                <h1>EMPLOYEE REGISTRATION</h1>
+                <p>Create your till account</p>
+            </div>
+        </div>
+
+        <div class="header-time">
+            <div class="date"></div>
+            <div class="time"></div>
+        </div>
+    </div>
+
+    <!-- Main Body -->
+    <div class="login-body">
+        <!-- Left Panel: registration form -->
+        <div class="login-panel login-left-panel">
+            <div class="avatar-circle">
+                <svg><use href="#i-person"/></svg>
+            </div>
+            <div class="employee-label">NEW EMPLOYEE</div>
+            <div class="divider-line"></div>
+
+            <form class="form-fields" id="registerForm" autocomplete="off">
+                <div class="id-field-wrap">
+                    <div class="id-label">EMPLOYEE ID (AUTO-GENERATED)</div>
+                    <div class="id-display">
+                        <svg class="id-key-icon"><use href="#i-key"/></svg>
+                        <span class="id-prefix">AMS-</span><span class="id-number" id="regIdNumber">0001</span>
+                        <svg class="id-lock"><use href="#i-lock"/></svg>
+                    </div>
+                </div>
+
+                <div class="input-wrap">
+                    <svg class="field-icon"><use href="#i-person"/></svg>
+                    <input type="text" id="regName" placeholder="Full Name">
+                </div>
+
+                <div class="input-wrap">
+                    <svg class="field-icon"><use href="#i-mail"/></svg>
+                    <input type="email" id="regEmail" placeholder="Email Address">
+                </div>
+
+                <div class="input-wrap">
+                    <svg class="field-icon"><use href="#i-key"/></svg>
+                    <input type="password" id="regPassword" placeholder="4-Digit Password" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                    <button type="button" class="toggle-eye" id="regToggleEye1">
+                        <svg id="regEyeIcon1"><use href="#i-eye"/></svg>
+                    </button>
+                </div>
+                <div class="pin-hint">Must be exactly 4 digits</div>
+
+                <div class="input-wrap">
+                    <svg class="field-icon"><use href="#i-key"/></svg>
+                    <input type="password" id="regConfirmPassword" placeholder="Confirm Password" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+                    <button type="button" class="toggle-eye" id="regToggleEye2">
+                        <svg id="regEyeIcon2"><use href="#i-eye"/></svg>
+                    </button>
+                </div>
+
+                <button type="submit" class="login-btn" id="registerBtn">REGISTER</button>
+            </form>
+
+            <div class="bottom-row">
+                <button class="ghost-btn" id="backToLoginBtn" type="button"><svg><use href="#i-arrow-left"/></svg>BACK TO LOGIN</button>
+            </div>
+            <div class="conn-status" id="registerStatus"></div>
+        </div>
+
+        <!-- Right Panel: selfie camera + PIN keypad -->
+        <div class="login-panel login-right-panel register-right-panel">
+            <div class="selfie-panel">
+                <div class="id-label">FACE ID SETUP <span style="color:var(--gold);">(5 PHOTOS)</span></div>
+                <div class="selfie-box" id="selfieBox">
+                    <div class="selfie-placeholder" id="selfiePlaceholder">
+                        <svg><use href="#i-camera"/></svg>
+                        <span>Camera preview will appear here</span>
+                    </div>
+                    <video id="selfieVideo" autoplay playsinline muted style="display:none;"></video>
+                    <img id="selfieImg" style="display:none;" alt="Selfie preview">
+                    <span class="selfie-hd-badge">HD</span>
+                </div>
+                <div class="selfie-step-row" id="selfieStepRow" style="display:none;">
+                    <span class="selfie-step-text" id="selfieStepText"></span>
+                    <div class="selfie-dots" id="selfieDots"></div>
+                </div>
+                <div class="selfie-btn-row" id="startRow">
+                    <button type="button" class="login-btn btn-sm" id="startCameraBtn">
+                        <svg style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px;"><use href="#i-camera"/></svg>START FACE SCAN
+                    </button>
+                </div>
+                <div class="selfie-btn-row" id="captureRow" style="display:none;">
+                    <button type="button" class="login-btn btn-sm" id="captureBtn">CAPTURE PHOTO</button>
+                </div>
+                <div class="selfie-btn-row" id="retakeRow" style="display:none;">
+                    <button type="button" class="ghost-btn btn-sm" id="retakeBtn"><svg><use href="#i-undo"/></svg>RETAKE ALL</button>
+                </div>
+                <div class="conn-status" id="cameraStatus"></div>
+            </div>
+
+            <div class="login-keypad-grid reg-keypad-grid">
+                <button class="login-key-btn num" type="button">1</button>
+                <button class="login-key-btn num" type="button">2</button>
+                <button class="login-key-btn num" type="button">3</button>
+                <button class="login-key-btn num" type="button">4</button>
+                <button class="login-key-btn num" type="button">5</button>
+                <button class="login-key-btn num" type="button">6</button>
+                <button class="login-key-btn num" type="button">7</button>
+                <button class="login-key-btn num" type="button">8</button>
+                <button class="login-key-btn num" type="button">9</button>
+                <button class="login-key-btn del" type="button"><svg><use href="#i-backspace"/></svg></button>
+                <button class="login-key-btn num" type="button">0</button>
+                <button class="login-key-btn back" type="button"><svg><use href="#i-arrow-left"/></svg>CLEAR</button>
+            </div>
+            <button class="osk-btn" id="regOskBtn" type="button"><svg><use href="#i-keyboard"/></svg>ON SCREEN KEYBOARD</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+        <div class="secure">
+            <svg><use href="#i-shield"/></svg>
+            <span>Secure System</span>
+            <span class="sep">|</span>
+            <span>Amsons Retail POS</span>
+        </div>
+        <div class="help">
+            <svg><use href="#i-help"/></svg>
+            <span>Need Help?</span>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================
+     CHOOSE YOUR BRANCH SCREEN
+     Shown right after a successful login. Picking a branch opens the
+     dashboard and sets its header badge to that branch's short name.
+     ================================================================ -->
+<div id="branchScreen" class="login-container" style="display:none;">
+    <!-- Header -->
+    <div class="login-header">
+        <div class="brand">
+            <div class="logo-crop">
+                <img src="AMSONS.png" alt="Amsons">
+            </div>
+        </div>
+
+        <div class="login-title">
+            <svg class="lock-icon"><use href="#i-shield"/></svg>
+            <div>
+                <h1>CHOOSE YOUR BRANCH</h1>
+                <p>Select the till location to continue</p>
+            </div>
+        </div>
+
+        <div class="header-time">
+            <div class="date"></div>
+            <div class="time"></div>
+        </div>
+    </div>
+
+    <!-- Branch cards -->
+    <div class="branch-body">
+        <div class="branch-card" data-badge="COVENTRY">
+            <div class="branch-img-wrap"><img src="amsonsCoventry.jpg" alt="Coventry Road Branch"></div>
+            <div class="branch-label">Coventry Road</div>
+        </div>
+        <div class="branch-card" data-badge="ALUM ROCK">
+            <div class="branch-img-wrap"><img src="amsonsAlumrock.webp" alt="Alum Rock Branch"></div>
+            <div class="branch-label">Alum Rock</div>
+        </div>
+        <div class="branch-card" data-badge="BRADFORD">
+            <div class="branch-img-wrap"><img src="amsonsBradford.webp" alt="Bradford Branch"></div>
+            <div class="branch-label">Bradford</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+        <div class="secure">
+            <svg><use href="#i-shield"/></svg>
+            <span>Secure System</span>
+            <span class="sep">|</span>
+            <span>Amsons Retail POS</span>
+        </div>
+        <div class="help">
+            <svg><use href="#i-help"/></svg>
+            <span>Need Help?</span>
+        </div>
+    </div>
+</div>
+
+<!-- On-Screen Keyboard Overlay (shared by the Login and Register screens) -->
+<div class="osk-overlay" id="oskOverlay">
+    <div class="osk-panel">
+        <div class="osk-row">
+            <button class="osk-key">1</button><button class="osk-key">2</button><button class="osk-key">3</button>
+            <button class="osk-key">4</button><button class="osk-key">5</button><button class="osk-key">6</button>
+            <button class="osk-key">7</button><button class="osk-key">8</button><button class="osk-key">9</button>
+            <button class="osk-key">0</button>
+        </div>
+        <div class="osk-row">
+            <button class="osk-key">q</button><button class="osk-key">w</button><button class="osk-key">e</button>
+            <button class="osk-key">r</button><button class="osk-key">t</button><button class="osk-key">y</button>
+            <button class="osk-key">u</button><button class="osk-key">i</button><button class="osk-key">o</button>
+            <button class="osk-key">p</button>
+        </div>
+        <div class="osk-row">
+            <button class="osk-key">a</button><button class="osk-key">s</button><button class="osk-key">d</button>
+            <button class="osk-key">f</button><button class="osk-key">g</button><button class="osk-key">h</button>
+            <button class="osk-key">j</button><button class="osk-key">k</button><button class="osk-key">l</button>
+        </div>
+        <div class="osk-row">
+            <button class="osk-key">z</button><button class="osk-key">x</button><button class="osk-key">c</button>
+            <button class="osk-key">v</button><button class="osk-key">b</button><button class="osk-key">n</button>
+            <button class="osk-key">m</button><button class="osk-key">@</button><button class="osk-key">.</button>
+            <button class="osk-key wide2" data-action="back"><svg style="width:18px;height:18px;display:inline-block;vertical-align:middle;"><use href="#i-backspace"/></svg></button>
+        </div>
+        <div class="osk-row">
+            <button class="osk-key wide2" data-action="close">CLOSE</button>
+            <button class="osk-key space" data-action="space">SPACE</button>
+            <button class="osk-key wide2" data-action="done">DONE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Category product picker - opened by tapping a CATEGORIES button on
+     the dashboard, populated live from Lightspeed (js/dashboard.js). -->
+<div class="cat-picker-overlay" id="catPickerOverlay">
+    <div class="cat-picker-panel">
+        <div class="cat-picker-header">
+            <span id="catPickerTitle">Category</span>
+            <button type="button" class="cat-picker-close" id="catPickerCloseBtn">✕</button>
+        </div>
+        <div class="cat-picker-grid gold-scroll" id="catPickerGrid"></div>
+    </div>
+</div>
+
+<!-- Generic sidebar-action modal - shared by DISCOUNT, ON HOLD, OPEN SALE,
+     GOODS RETURN, INQUIRY, VOUCHER and SETTINGS (js/dashboard.js swaps the
+     body's contents per feature; see the .am-* classes above). -->
+<div class="cat-picker-overlay" id="actionModalOverlay">
+    <div class="cat-picker-panel">
+        <div class="cat-picker-header">
+            <span id="actionModalTitle">Action</span>
+            <button type="button" class="cat-picker-close" id="actionModalCloseBtn">✕</button>
+        </div>
+        <div class="gold-scroll" id="actionModalBody" style="overflow-y:auto;"></div>
+    </div>
+</div>
+
+<!-- ================================================================
+     TILL DASHBOARD SCREEN
+     Hidden by default (style="display:none"). Revealed by the login
+     script once the user submits valid credentials on the login screen.
+     ================================================================ -->
+<div id="dashboardScreen" class="pos-container" style="display:none;">
+    <div class="till-toast" id="tillToast"></div>
+    <div class="alarm-flash" id="alarmFlash"></div>
+    <input type="text" id="scanCaptureInput" class="scan-capture" autocomplete="off" inputmode="none" tabindex="-1">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="till-block">
+                <svg class="icon-gold"><use href="#i-till"/></svg>
+                <div>
+                    <div class="till-num" id="tillNumLabel">TILL # 1</div>
+                    <div class="till-underline"></div>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="admin-block">
+                <svg class="icon-gold"><use href="#i-person"/></svg>
+                <div>
+                    <div class="admin-label">TILL ADMIN</div>
+                    <div class="admin-name">REHAN</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-center">
+            <div class="logo-crop">
+                <img class="amsons-logo" src="AMSONS.png" alt="Amsons">
+            </div>
+            <span class="alumrock-box">ALUMROCK</span>
+        </div>
+
+        <div class="topbar-right">
+            <div class="mode-row">
+                <div class="mode-label">TILL MODE</div>
+                <div class="mode-badge" id="modeBadge">NORMAL</div>
+            </div>
+            <div class="header-time">
+                <div class="date"></div>
+                <div class="time"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Body -->
+    <div class="main-body">
+        <div class="left-area">
+            <input class="invoice-search" placeholder="New Invoice ..." readonly>
+
+            <div class="cards-grid">
+                <div class="info-card" id="dataInputCard">
+                    <div class="card-label">DATA INPUT</div>
+                    <div class="card-value" id="dataInputValue"></div>
+                </div>
+                <div class="info-card" id="priceCard">
+                    <div class="card-label">PRICE</div>
+                    <div class="card-value" id="priceValue">0.00</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-label">TOTAL QTY</div>
+                    <div class="card-value" id="totalQtyValue">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="card-label">TOTAL ITEMS</div>
+                    <div class="card-value" id="totalItemsValue">0</div>
+                </div>
+            </div>
+
+            <div class="table-row">
+                <div class="item-table-wrap gold-scroll">
+                    <table class="item-table">
+                        <thead>
+                            <tr>
+                                <th style="width:19%;">CODE / BARCODE</th>
+                                <th style="width:40%;">DESCRIPTION</th>
+                                <th style="width:13%;">PRICE</th>
+                                <th style="width:12%;">QTY</th>
+                                <th style="width:16%;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="totals-panel">
+                    <div class="totals-row amount">
+                        <span class="t-label">TOTAL AMOUNT</span>
+                        <span class="t-value" id="totalAmountValue">£0.00</span>
+                    </div>
+                    <div class="totals-row payable">
+                        <span class="t-label">AMT. PAYABLE</span>
+                        <span class="t-value" id="amtPayableValue">£0.00</span>
+                    </div>
+                    <div class="totals-row change">
+                        <span class="t-label">CASH CHANGE</span>
+                        <span class="t-value" id="cashChangeValue">£0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-section">
+                <div class="categories-block">
+                    <div class="section-title">QUICK PRODUCTS AND CATEGORIES</div>
+
+                    <div class="section-subtitle">BEST SALE PRODUCTS</div>
+                    <div class="products-grid gold-scroll" id="productsGrid"></div>
+
+                    <div class="section-subtitle">CATEGORIES</div>
+                    <div class="categories-grid">
+                        <button class="cat-btn"><svg class="cat-icon"><use href="#i-menitems"/></svg>MEN<br>ITEMS</button>
+                        <button class="cat-btn"><svg class="cat-icon"><use href="#i-womenitems"/></svg>WOMEN<br>ITEMS</button>
+                        <button class="cat-btn"><svg class="cat-icon"><use href="#i-blackseed"/></svg>BLACKSEED<br>ITEMS</button>
+                        <button class="cat-btn"><svg class="cat-icon"><use href="#i-opensale"/></svg>NO BARCODE<br>ITEMS</button>
+                    </div>
+                </div>
+
+                <div class="keypad-block">
+                    <div class="keypad-grid">
+                        <button class="key-btn" data-key="1">1</button>
+                        <button class="key-btn" data-key="2">2</button>
+                        <button class="key-btn" data-key="3">3</button>
+                        <button class="key-btn action tan" data-key="clear-entry"><svg class="k-icon"><use href="#i-arrow-left"/></svg>INVENTORY</button>
+
+                        <button class="key-btn" data-key="4">4</button>
+                        <button class="key-btn" data-key="5">5</button>
+                        <button class="key-btn" data-key="6">6</button>
+                        <button class="key-btn pale" data-key="backspace"><svg class="k-icon"><use href="#i-backspace"/></svg></button>
+
+                        <button class="key-btn" data-key="7">7</button>
+                        <button class="key-btn" data-key="8">8</button>
+                        <button class="key-btn" data-key="9">9</button>
+                        <button class="key-btn action green-btn" data-key="enter"><svg class="k-icon"><use href="#i-check"/></svg>ENTER</button>
+
+                        <button class="key-btn" data-key="0">0</button>
+                        <button class="key-btn" data-key="00">00</button>
+                        <button class="key-btn" data-key="multiply">*</button>
+                        <button class="key-btn action" data-key="keyboard"><svg class="k-icon"><use href="#i-keyboard"/></svg>KEYBOARD</button>
+
+                        <button class="key-btn orange-btn" data-key="cash-50">£50</button>
+                        <button class="key-btn orange-btn" data-key="cash-20">£20</button>
+                        <button class="key-btn orange-btn" data-key="cash-10">£10</button>
+                        <button class="key-btn action tan" data-key="clear-sale"><svg class="k-icon"><use href="#i-trash"/></svg>CLEAR SALE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="right-sidebar">
+            <div class="sidebar-top-row">
+                <button class="sidebar-top-btn back-branch-btn" id="backToBranchBtn" type="button" title="Back to branch selection">
+                    <svg class="top-btn-icon"><use href="#i-arrow-left"/></svg>
+                    <span>BACK</span>
+                </button>
+                <button class="sidebar-top-btn logout-dash-btn" id="dashLogoutBtn" type="button" title="Logout">
+                    <svg class="top-btn-icon"><use href="#i-logout"/></svg>
+                    <span>LOGOUT</span>
+                </button>
+            </div>
+
+            <button class="menu-btn c-settings"><span class="icon-box"><svg class="m-icon"><use href="#i-gear"/></svg></span><span class="label">SETTINGS</span></button>
+            <button class="menu-btn c-hold"><span class="icon-box"><svg class="m-icon"><use href="#i-pause"/></svg></span><span class="label">ON HOLD</span></button>
+            <button class="menu-btn c-return"><span class="icon-box"><svg class="m-icon"><use href="#i-undo"/></svg></span><span class="label">GOODS<br>RETURN</span></button>
+            <button class="menu-btn c-inquiry"><span class="icon-box"><svg class="m-icon"><use href="#i-search"/></svg></span><span class="label">INQUIRY</span></button>
+            <button class="menu-btn c-discount"><span class="icon-box"><svg class="m-icon"><use href="#i-percent"/></svg></span><span class="label">DISCOUNT</span></button>
+            <button class="menu-btn c-void"><span class="icon-box"><svg class="m-icon"><use href="#i-block"/></svg></span><span class="label">VOID</span></button>
+            <button class="menu-btn c-opensale"><span class="icon-box"><svg class="m-icon"><use href="#i-tag"/></svg></span><span class="label">OPEN SALE</span></button>
+            <button class="menu-btn c-voucher"><span class="icon-box"><svg class="m-icon"><use href="#i-voucher"/></svg></span><span class="label">VOUCHER</span></button>
+            <button class="menu-btn c-cardsale"><span class="icon-box"><svg class="m-icon"><use href="#i-card"/></svg></span><span class="label">CARD SALE</span></button>
+            <button class="menu-btn c-cashsale"><span class="icon-box"><svg class="m-icon"><use href="#i-cash"/></svg></span><span class="label">CASH SALE</span></button>
+        </div>
+    </div>
+</div>
+
+<script src="js/dashboard.js"></script>
+
+<script src="js/login.js"></script>
+
+<script src="js/branch.js"></script>
+
+<script src="js/register.js"></script>
+
+</body>
+</html>
